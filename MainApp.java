@@ -1,34 +1,41 @@
-package com.example.salesforce;
 
-import org.json.JSONObject;
+package com.legacycrm;
+
+import com.legacycrm.model.Lead;
+import com.legacycrm.model.Opportunity;
+import com.legacycrm.repo.InMemoryLeadRepository;
+import com.legacycrm.repo.InMemoryOpportunityRepository;
+import com.legacycrm.service.ConversionService;
+import com.legacycrm.service.LeadService;
+import com.legacycrm.service.OpportunityService;
 
 public class MainApp {
     public static void main(String[] args) {
-        try {
-            // Salesforce credentials
-            String clientId = "YOUR_CLIENT_ID";
-            String clientSecret = "YOUR_CLIENT_SECRET";
-            String username = "YOUR_SF_USERNAME";
-            String password = "YOUR_SF_PASSWORD+SECURITY_TOKEN";
-            String loginUrl = "https://login.salesforce.com";
+        // Initialize repositories (in-memory for demo; swap with DB-backed implementations later)
+        InMemoryLeadRepository leadRepo = new InMemoryLeadRepository();
+        InMemoryOpportunityRepository oppRepo = new InMemoryOpportunityRepository();
 
-            // Step 1: Authenticate
-            SalesforceAuth auth = new SalesforceAuth(clientId, clientSecret, username, password, loginUrl);
-            JSONObject authResponse = auth.authenticate();
-            String accessToken = authResponse.getString("access_token");
-            String instanceUrl = authResponse.getString("instance_url");
+        // Initialize services
+        LeadService leadService = new LeadService(leadRepo);
+        OpportunityService opportunityService = new OpportunityService(oppRepo);
+        ConversionService conversionService = new ConversionService(leadRepo, opportunityService);
 
-            // Step 2: Create Lead
-            LeadService leadService = new LeadService(instanceUrl, accessToken);
-            String leadId = leadService.createLead("John", "Doe", "Acme Corp");
-            System.out.println("Lead created with ID: " + leadId);
+        // 1) Create a Lead
+        Lead lead = leadService.createLead("John", "Doe", "Acme Corp", "john.doe@acme.example", "+1-555-0100");
+        System.out.println("Created Lead: " + lead);
 
-            // Step 3: Convert Lead
-            leadService.convertLead(leadId);
-            System.out.println("Lead converted to Opportunity.");
+        // 2) Convert Lead -> Opportunity
+        Opportunity opp = conversionService.convertLeadToOpportunity(
+            lead.getId(),
+            "Acme Corp - New Deal",
+            50000.00,
+            "New Business"
+        );
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        System.out.println("Converted to Opportunity: " + opp);
+
+        // 3) Verify the lead is marked as converted
+        Lead fetched = leadService.getLead(lead.getId()).orElseThrow();
+        System.out.println("Lead status after conversion: " + fetched.getStatus());
     }
 }
