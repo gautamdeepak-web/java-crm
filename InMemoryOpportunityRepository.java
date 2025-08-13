@@ -14,7 +14,7 @@ public class InMemoryOpportunityRepository implements OpportunityRepository {
     }
 
     @Override
-    apublic Optional<Opportunity> findById(String id) {
+    public Optional<Opportunity> findById(String id) {
         return Optional.ofNullable(store.get(id));
     }
 
