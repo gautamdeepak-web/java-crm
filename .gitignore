@@ -1,0 +1,14 @@
+# Compiled class files
+*.class
+
+# Package directory structure (working files only, not part of project)
+com/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# Build artifacts
+target/
+build/
