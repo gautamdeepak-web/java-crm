@@ -1,0 +1,15 @@
+# Compiled Java classes
+*.class
+
+# Temporary files
+/tmp/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# Build directories
+build/
+target/
+out/
